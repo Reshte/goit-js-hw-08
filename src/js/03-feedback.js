@@ -4,9 +4,47 @@
 // В противном случае поля должны быть пустыми.
 // При сабмите формы очищай хранилище и поля формы, а также выводи объект с полями email, message и текущими их значениями в консоль.
 // Сделай так, чтобы хранилище обновлялось не чаще чем раз в 500 миллисекунд. Для этого добавь в проект и используй библиотеку lodash.throttle.
+const throttle = require('lodash.throttle');
 
 const formEl = document.querySelector('.feedback-form');
-formEl.addEventListener('input', textInput);
+const inputEl = document.querySelector('input');
+const textareaEl = document.querySelector('textarea');
+const buttonEl = document.querySelector('button');
+const FORM_KEY = 'feedback-form-state';
+const localObj = {
+  email: '',
+  message: '',
+};
+
+formEl.addEventListener('input', throttle(textInput, 500));
+
 function textInput(evt) {
-  console.log(evt.target.value);
+  if (evt.target.type === 'email') {
+    localObj.email = evt.target.value;
+    localStorage.setItem(FORM_KEY, JSON.stringify(localObj));
+  } else if (evt.target.type === 'textarea') {
+    localObj.message = evt.target.value;
+    localStorage.setItem(FORM_KEY, JSON.stringify(localObj));
+  }
+}
+
+fillInput();
+
+function fillInput() {
+  try {
+    inputEl.value = JSON.parse(localStorage.getItem(FORM_KEY)).email;
+    textareaEl.value = JSON.parse(localStorage.getItem(FORM_KEY)).message;
+  } catch (error) {
+    inputEl.value = '';
+    textareaEl.value = '';
+  }
+}
+
+buttonEl.addEventListener('click', onclickSubmit);
+
+function onclickSubmit(evt) {
+  evt.preventDefault();
+  console.log(localObj);
+  localStorage.removeItem(FORM_KEY);
+  formEl.reset();
 }
